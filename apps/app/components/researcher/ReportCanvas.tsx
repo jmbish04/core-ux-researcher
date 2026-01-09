@@ -16,6 +16,9 @@ import {
   ChevronRight,
 } from "lucide-react";
 
+/** Maximum characters to show in prompt preview before truncation */
+const PROMPT_PREVIEW_MAX_CHARS = 500;
+
 interface UserStory {
   asA: string;
   iWantTo: string;
@@ -410,7 +413,7 @@ function PromptsTab({
             </button>
           </div>
           <pre className="p-3 bg-slate-900 text-slate-100 rounded text-xs font-mono overflow-x-auto whitespace-pre-wrap max-h-48">
-            {prompt.prompt.slice(0, 500)}...
+            {prompt.prompt.slice(0, PROMPT_PREVIEW_MAX_CHARS)}...
           </pre>
         </div>
       ))}

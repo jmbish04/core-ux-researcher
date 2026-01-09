@@ -15,10 +15,31 @@ import type {
 
 /**
  * Durable Object stub interface for RPC calls.
+ * Using unknown return type for RPC methods as the actual types
+ * are resolved at runtime based on the Durable Object implementation.
  */
 interface DurableObjectStub {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: (...args: unknown[]) => Promise<any>;
+  analyze: (
+    requestId: string,
+    repoUrl: string,
+  ) => Promise<UXResearchReport["semanticMap"]>;
+  scout: (
+    requestId: string,
+    semanticMap: UXResearchReport["semanticMap"],
+    targetRegistries?: string[],
+  ) => Promise<{
+    moodBoard: string[];
+    componentRecommendations: UXResearchReport["recommendedStack"];
+  }>;
+  synthesize: (
+    requestId: string,
+    semanticMap: UXResearchReport["semanticMap"],
+    visualResearch: {
+      moodBoard: string[];
+      componentRecommendations: UXResearchReport["recommendedStack"];
+    },
+    payload: UXResearchRequest,
+  ) => Promise<UXResearchReport>;
 }
 
 /**

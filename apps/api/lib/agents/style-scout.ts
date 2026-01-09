@@ -9,6 +9,9 @@
 import { Agent } from "agents";
 import type { ComponentRecommendation, UXResearchReport } from "../zod-schema";
 
+/** Browser rendering API endpoint - should be overridden by environment variable in production */
+const BROWSER_RENDER_API_URL = "https://browser.mcp.cloudflare.com/screenshot";
+
 /**
  * State interface for the Style Scout Agent.
  */
@@ -38,7 +41,8 @@ const COMPONENT_REGISTRIES: RegistryInfo[] = [
     name: "@magicui",
     url: "https://magicui.design",
     category: "creative",
-    description: "150+ free and open-source animated components for landing pages",
+    description:
+      "150+ free and open-source animated components for landing pages",
   },
   {
     name: "@aceternity",
@@ -62,7 +66,8 @@ const COMPONENT_REGISTRIES: RegistryInfo[] = [
     name: "@cult-ui",
     url: "https://www.cult-ui.com",
     category: "creative",
-    description: "Curated set of headless and composable components with Framer Motion",
+    description:
+      "Curated set of headless and composable components with Framer Motion",
   },
   {
     name: "@tremor",
@@ -183,12 +188,21 @@ export class StyleScoutAgent extends Agent<Env, StyleScoutState> {
     console.log(`[StyleScoutAgent] Inferred context: ${projectContext.type}`);
 
     // Step 2: Select relevant registries
-    const selectedRegistries = this.selectRegistries(projectContext, targetRegistries);
-    console.log(`[StyleScoutAgent] Selected ${selectedRegistries.length} registries`);
+    const selectedRegistries = this.selectRegistries(
+      projectContext,
+      targetRegistries,
+    );
+    console.log(
+      `[StyleScoutAgent] Selected ${selectedRegistries.length} registries`,
+    );
 
     // Step 3: Generate component recommendations based on data needs
-    const recommendations = this.generateRecommendations(semanticMap, selectedRegistries, projectContext);
-    
+    const recommendations = this.generateRecommendations(
+      semanticMap,
+      selectedRegistries,
+      projectContext,
+    );
+
     // Step 4: Capture screenshots (if browser rendering is available)
     const screenshots = await this.captureScreenshots(selectedRegistries);
 
@@ -208,16 +222,26 @@ export class StyleScoutAgent extends Agent<Env, StyleScoutState> {
    * Infer project context from semantic map.
    */
   private inferProjectContext(semanticMap: UXResearchReport["semanticMap"]): {
-    type: "saas" | "ecommerce" | "dashboard" | "portfolio" | "social" | "general";
+    type:
+      | "saas"
+      | "ecommerce"
+      | "dashboard"
+      | "portfolio"
+      | "social"
+      | "general";
     features: string[];
   } {
     const tableNames = semanticMap.tables.map((t) => t.name.toLowerCase());
-    const allFields = semanticMap.tables.flatMap((t) => t.fields.map((f) => f.toLowerCase()));
+    const allFields = semanticMap.tables.flatMap((t) =>
+      t.fields.map((f) => f.toLowerCase()),
+    );
     const features: string[] = [];
 
     // SaaS indicators
     if (
-      tableNames.some((t) => /subscription|billing|plan|organization|team|tenant/i.test(t)) ||
+      tableNames.some((t) =>
+        /subscription|billing|plan|organization|team|tenant/i.test(t),
+      ) ||
       allFields.some((f) => /stripe|plan_id|subscription/i.test(f))
     ) {
       features.push("billing", "multi-tenant");
@@ -233,9 +257,7 @@ export class StyleScoutAgent extends Agent<Env, StyleScoutState> {
     }
 
     // Dashboard indicators
-    if (
-      tableNames.some((t) => /metric|analytics|report|log|event/i.test(t))
-    ) {
+    if (tableNames.some((t) => /metric|analytics|report|log|event/i.test(t))) {
       features.push("charts", "metrics");
       return { type: "dashboard", features };
     }
@@ -275,7 +297,10 @@ export class StyleScoutAgent extends Agent<Env, StyleScoutState> {
 
     // Always include general-purpose registries
     selected.push(
-      ...COMPONENT_REGISTRIES.filter((r) => r.category === "general").slice(0, 2),
+      ...COMPONENT_REGISTRIES.filter((r) => r.category === "general").slice(
+        0,
+        2,
+      ),
     );
 
     // Add context-specific registries
@@ -283,28 +308,38 @@ export class StyleScoutAgent extends Agent<Env, StyleScoutState> {
       case "saas":
         selected.push(
           ...COMPONENT_REGISTRIES.filter(
-            (r) => r.name.includes("billing") || r.name.includes("clerk") || r.category === "functional",
+            (r) =>
+              r.name.includes("billing") ||
+              r.name.includes("clerk") ||
+              r.category === "functional",
           ).slice(0, 3),
         );
         break;
       case "dashboard":
         selected.push(
           ...COMPONENT_REGISTRIES.filter(
-            (r) => r.name.includes("tremor") || r.description.includes("dashboard") || r.description.includes("chart"),
+            (r) =>
+              r.name.includes("tremor") ||
+              r.description.includes("dashboard") ||
+              r.description.includes("chart"),
           ).slice(0, 3),
         );
         break;
       case "ecommerce":
         selected.push(
           ...COMPONENT_REGISTRIES.filter(
-            (r) => r.description.includes("ecommerce") || r.category === "functional",
+            (r) =>
+              r.description.includes("ecommerce") ||
+              r.category === "functional",
           ).slice(0, 3),
         );
         break;
       default:
         // Add creative registries for general projects
         selected.push(
-          ...COMPONENT_REGISTRIES.filter((r) => r.category === "creative").slice(0, 2),
+          ...COMPONENT_REGISTRIES.filter(
+            (r) => r.category === "creative",
+          ).slice(0, 2),
         );
     }
 
@@ -323,7 +358,8 @@ export class StyleScoutAgent extends Agent<Env, StyleScoutState> {
     const recommendations: ComponentRecommendation[] = [];
 
     // Core UI registry recommendation
-    const coreRegistry = registries.find((r) => r.category === "general") || registries[0];
+    const coreRegistry =
+      registries.find((r) => r.category === "general") || registries[0];
     if (coreRegistry) {
       recommendations.push({
         registry: coreRegistry.name,
@@ -336,7 +372,10 @@ export class StyleScoutAgent extends Agent<Env, StyleScoutState> {
     // Table component for data-heavy apps
     const hasLargeTables = semanticMap.tables.some((t) => t.fields.length > 5);
     if (hasLargeTables) {
-      const gridRegistry = registries.find((r) => r.description.includes("grid") || r.description.includes("table"));
+      const gridRegistry = registries.find(
+        (r) =>
+          r.description.includes("grid") || r.description.includes("table"),
+      );
       if (gridRegistry) {
         recommendations.push({
           registry: gridRegistry.name,
@@ -349,7 +388,9 @@ export class StyleScoutAgent extends Agent<Env, StyleScoutState> {
 
     // Dashboard components for analytics
     if (context.type === "dashboard" || context.features.includes("metrics")) {
-      const dashboardRegistry = registries.find((r) => r.name.includes("tremor") || r.description.includes("dashboard"));
+      const dashboardRegistry = registries.find(
+        (r) => r.name.includes("tremor") || r.description.includes("dashboard"),
+      );
       if (dashboardRegistry) {
         recommendations.push({
           registry: dashboardRegistry.name,
@@ -361,24 +402,31 @@ export class StyleScoutAgent extends Agent<Env, StyleScoutState> {
     }
 
     // Auth components
-    if (context.features.includes("auth") || semanticMap.tables.some((t) => /user|account/i.test(t.name))) {
+    if (
+      context.features.includes("auth") ||
+      semanticMap.tables.some((t) => /user|account/i.test(t.name))
+    ) {
       recommendations.push({
         registry: "@clerk",
         componentName: "Authentication",
         installCommand: "npm install @clerk/nextjs",
-        rationale: "User/Account tables detected. Clerk provides drop-in authentication UI.",
+        rationale:
+          "User/Account tables detected. Clerk provides drop-in authentication UI.",
       });
     }
 
     // AI/Chat components
-    if (semanticMap.tables.some((t) => /message|chat|conversation/i.test(t.name))) {
+    if (
+      semanticMap.tables.some((t) => /message|chat|conversation/i.test(t.name))
+    ) {
       const aiRegistry = registries.find((r) => r.category === "ai");
       if (aiRegistry) {
         recommendations.push({
           registry: aiRegistry.name,
           componentName: "Chat Interface",
           installCommand: `npx shadcn add ${aiRegistry.name.replace("@", "")}/chat`,
-          rationale: "Message/Chat tables detected. This registry provides AI-ready chat components.",
+          rationale:
+            "Message/Chat tables detected. This registry provides AI-ready chat components.",
         });
       }
     }
@@ -401,19 +449,25 @@ export class StyleScoutAgent extends Agent<Env, StyleScoutState> {
    * Capture screenshots of registry demos.
    * Uses Cloudflare Browser Rendering API if available.
    */
-  private async captureScreenshots(registries: RegistryInfo[]): Promise<string[]> {
+  private async captureScreenshots(
+    registries: RegistryInfo[],
+  ): Promise<string[]> {
     const screenshots: string[] = [];
 
     // Check if browser rendering is available
     if (!this.env.CF_BROWSER_RENDER_TOKEN) {
-      console.log("[StyleScoutAgent] Browser rendering not available, skipping screenshots");
+      console.log(
+        "[StyleScoutAgent] Browser rendering not available, skipping screenshots",
+      );
       return screenshots;
     }
 
     // Capture screenshots for each registry (limited to 3)
     for (const registry of registries.slice(0, 3)) {
       try {
-        const screenshotUrl = await this.captureRegistryScreenshot(registry.url);
+        const screenshotUrl = await this.captureRegistryScreenshot(
+          registry.url,
+        );
         if (screenshotUrl) {
           screenshots.push(screenshotUrl);
           this.setState({
@@ -423,7 +477,9 @@ export class StyleScoutAgent extends Agent<Env, StyleScoutState> {
           });
         }
       } catch (e) {
-        console.warn(`[StyleScoutAgent] Failed to capture ${registry.url}: ${e}`);
+        console.warn(
+          `[StyleScoutAgent] Failed to capture ${registry.url}: ${e}`,
+        );
       }
     }
 
@@ -436,10 +492,11 @@ export class StyleScoutAgent extends Agent<Env, StyleScoutState> {
   private async captureRegistryScreenshot(url: string): Promise<string | null> {
     try {
       // Use Cloudflare Browser Rendering MCP
-      const response = await fetch("https://browser.mcp.cloudflare.com/screenshot", {
+      const apiUrl = this.env.BROWSER_RENDER_API_URL || BROWSER_RENDER_API_URL;
+      const response = await fetch(apiUrl, {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${this.env.CF_BROWSER_RENDER_TOKEN}`,
+          Authorization: `Bearer ${this.env.CF_BROWSER_RENDER_TOKEN}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -453,7 +510,7 @@ export class StyleScoutAgent extends Agent<Env, StyleScoutState> {
         throw new Error(`Screenshot API returned ${response.status}`);
       }
 
-      const result = await response.json() as { screenshotUrl?: string };
+      const result = (await response.json()) as { screenshotUrl?: string };
       return result.screenshotUrl || null;
     } catch (e) {
       console.warn(`[StyleScoutAgent] Screenshot capture failed: ${e}`);

@@ -34,8 +34,9 @@ function ResearcherPage() {
   const [userIntent, setUserIntent] = useState("");
   const [loading, setLoading] = useState(false);
   const [session, setSession] = useState<ResearchSession | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [report, setReport] = useState<any>(null);
+  const [report, setReport] = useState<
+    Parameters<typeof ReportCanvas>[0]["report"] | null
+  >(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleStartResearch = useCallback(async () => {

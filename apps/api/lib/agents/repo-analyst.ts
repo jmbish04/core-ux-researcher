@@ -10,6 +10,15 @@ import { Agent } from "agents";
 import { getOctokit } from "./tools/github/core";
 import type { UXResearchReport } from "../zod-schema";
 
+/** Maximum depth for recursive file tree fetching to avoid excessive API calls */
+const MAX_FILE_TREE_DEPTH = 3;
+
+/** Maximum number of schema files to read */
+const MAX_SCHEMA_FILES = 5;
+
+/** Maximum number of API route files to read */
+const MAX_API_ROUTE_FILES = 10;
+
 /**
  * State interface for the Repo Analyst Agent.
  */
@@ -127,7 +136,7 @@ export class RepoAnalystAgent extends Agent<Env, RepoAnalystState> {
     console.log(`[RepoAnalystAgent] Found ${schemaFiles.length} schema files`);
 
     let schemaContent = "";
-    for (const schemaPath of schemaFiles.slice(0, 5)) {
+    for (const schemaPath of schemaFiles.slice(0, MAX_SCHEMA_FILES)) {
       try {
         const content = await this.fetchFileContent(
           octokit,
@@ -149,7 +158,7 @@ export class RepoAnalystAgent extends Agent<Env, RepoAnalystState> {
     );
 
     const apiRoutes: RepoAnalystState["apiRoutes"] = [];
-    for (const routePath of apiRouteFiles.slice(0, 10)) {
+    for (const routePath of apiRouteFiles.slice(0, MAX_API_ROUTE_FILES)) {
       try {
         const content = await this.fetchFileContent(
           octokit,
@@ -188,7 +197,7 @@ export class RepoAnalystAgent extends Agent<Env, RepoAnalystState> {
     path: string = "",
     depth: number = 0,
   ): Promise<string[]> {
-    if (depth > 3) return []; // Limit recursion depth
+    if (depth > MAX_FILE_TREE_DEPTH) return []; // Limit recursion depth
 
     try {
       const { data } = await octokit.repos.getContent({
