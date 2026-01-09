@@ -1,7 +1,8 @@
 import * as sandbox from "./sandbox";
-import * as 'cloudflare-mcp' fron './cloudflare-mcp'
+import * as socrata from "./socrata";
+import * as dbi from "./dbi";
 
-export { sandbox, socrata };
+export { sandbox, socrata, dbi };
 
 export type { SodaDatasetKey } from "./socrata";
 
