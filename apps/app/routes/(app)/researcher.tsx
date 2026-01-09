@@ -34,6 +34,7 @@ function ResearcherPage() {
   const [userIntent, setUserIntent] = useState("");
   const [loading, setLoading] = useState(false);
   const [session, setSession] = useState<ResearchSession | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [report, setReport] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -95,7 +96,8 @@ function ResearcherPage() {
     }
   }, [session]);
 
-  const handleCopyPrompt = useCallback((prompt: string) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleCopyPrompt = useCallback((_prompt: string) => {
     // Could integrate with toast notifications
     console.log("Copied prompt to clipboard");
   }, []);
@@ -204,8 +206,8 @@ function InputView({
           </h2>
           <p className="text-slate-600 dark:text-slate-400 max-w-lg mx-auto">
             Paste a GitHub repository URL and let our AI swarm analyze your
-            database schemas, API routes, and business logic to generate
-            user stories, wireframes, and component recommendations.
+            database schemas, API routes, and business logic to generate user
+            stories, wireframes, and component recommendations.
           </p>
         </div>
 

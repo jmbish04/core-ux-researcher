@@ -8,7 +8,6 @@
 import { useState } from "react";
 import {
   Copy,
-  Download,
   ExternalLink,
   Layout,
   FileText,
@@ -77,10 +76,11 @@ type Tab = "overview" | "stories" | "wireframes" | "stack" | "prompts";
 
 export function ReportCanvas({ report, onCopyPrompt }: ReportCanvasProps) {
   const [activeTab, setActiveTab] = useState<Tab>("overview");
-  const [selectedWireframe, setSelectedWireframe] = useState<WireframeSpec | null>(
-    report.wireframes[0] || null,
+  const [selectedWireframe, setSelectedWireframe] =
+    useState<WireframeSpec | null>(report.wireframes[0] || null);
+  const [copiedPromptIndex, setCopiedPromptIndex] = useState<number | null>(
+    null,
   );
-  const [copiedPromptIndex, setCopiedPromptIndex] = useState<number | null>(null);
 
   const handleCopyPrompt = (prompt: string, index: number) => {
     navigator.clipboard.writeText(prompt);
@@ -90,9 +90,21 @@ export function ReportCanvas({ report, onCopyPrompt }: ReportCanvasProps) {
   };
 
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
-    { id: "overview", label: "Overview", icon: <FileText className="h-4 w-4" /> },
-    { id: "stories", label: "User Stories", icon: <ChevronRight className="h-4 w-4" /> },
-    { id: "wireframes", label: "Wireframes", icon: <Layout className="h-4 w-4" /> },
+    {
+      id: "overview",
+      label: "Overview",
+      icon: <FileText className="h-4 w-4" />,
+    },
+    {
+      id: "stories",
+      label: "User Stories",
+      icon: <ChevronRight className="h-4 w-4" />,
+    },
+    {
+      id: "wireframes",
+      label: "Wireframes",
+      icon: <Layout className="h-4 w-4" />,
+    },
     { id: "stack", label: "Stack", icon: <Sparkles className="h-4 w-4" /> },
     { id: "prompts", label: "Prompts", icon: <Code className="h-4 w-4" /> },
   ];
@@ -121,9 +133,7 @@ export function ReportCanvas({ report, onCopyPrompt }: ReportCanvasProps) {
 
         {/* Tab Content */}
         <div className="flex-1 overflow-y-auto p-6">
-          {activeTab === "overview" && (
-            <OverviewTab report={report} />
-          )}
+          {activeTab === "overview" && <OverviewTab report={report} />}
 
           {activeTab === "stories" && (
             <UserStoriesTab stories={report.userStories} />
@@ -250,7 +260,8 @@ function OverviewTab({ report }: { report: UXResearchReport }) {
               </p>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 {table.fields.length} fields
-                {table.relationships && ` • ${table.relationships.length} relations`}
+                {table.relationships &&
+                  ` • ${table.relationships.length} relations`}
               </p>
             </div>
           ))}
@@ -266,9 +277,9 @@ function UserStoriesTab({ stories }: { stories: UserStory[] }) {
       <h3 className="font-semibold text-slate-700 dark:text-slate-300">
         User Stories ({stories.length})
       </h3>
-      {stories.map((story, i) => (
+      {stories.map((story) => (
         <div
-          key={i}
+          key={`${story.asA}-${story.mappedTo}`}
           className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700"
         >
           <p className="text-slate-700 dark:text-slate-300">
@@ -299,9 +310,9 @@ function WireframesTab({
       <h3 className="font-semibold text-slate-700 dark:text-slate-300">
         Wireframe Specifications ({wireframes.length})
       </h3>
-      {wireframes.map((wireframe, i) => (
+      {wireframes.map((wireframe) => (
         <button
-          key={i}
+          key={wireframe.screenName}
           onClick={() => onSelect(wireframe)}
           className={`w-full text-left p-4 rounded-lg border transition-colors ${
             selected?.screenName === wireframe.screenName
@@ -327,15 +338,19 @@ function WireframesTab({
   );
 }
 
-function StackTab({ recommendations }: { recommendations: ComponentRecommendation[] }) {
+function StackTab({
+  recommendations,
+}: {
+  recommendations: ComponentRecommendation[];
+}) {
   return (
     <div className="space-y-4">
       <h3 className="font-semibold text-slate-700 dark:text-slate-300">
         Recommended Component Stack
       </h3>
-      {recommendations.map((rec, i) => (
+      {recommendations.map((rec) => (
         <div
-          key={i}
+          key={`${rec.registry}-${rec.componentName}`}
           className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700"
         >
           <div className="flex items-center justify-between mb-2">
@@ -379,7 +394,7 @@ function PromptsTab({
       </div>
       {prompts.map((prompt, i) => (
         <div
-          key={i}
+          key={prompt.title}
           className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700"
         >
           <div className="flex items-center justify-between mb-2">
@@ -437,9 +452,7 @@ function WireframePreview({ wireframe }: { wireframe: WireframeSpec }) {
             <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">
               {zone.name}
             </p>
-            <p className="text-xs text-slate-400 mt-1">
-              Type: {zone.type}
-            </p>
+            <p className="text-xs text-slate-400 mt-1">Type: {zone.type}</p>
             {zone.dataSource && (
               <p className="text-xs text-indigo-500 mt-1">
                 Data: {zone.dataSource}

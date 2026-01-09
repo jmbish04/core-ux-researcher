@@ -78,15 +78,27 @@ export class ArchitectAgent extends Agent<Env, ArchitectState> {
     });
 
     // Step 1: Infer user context and audience
-    const userContext = await this.analyzeUserContext(semanticMap, payload.userIntent);
+    const userContext = await this.analyzeUserContext(
+      semanticMap,
+      payload.userIntent,
+    );
     console.log(`[ArchitectAgent] Inferred context: ${userContext.context}`);
 
     // Step 2: Generate user stories
-    const userStories = await this.generateUserStories(semanticMap, userContext);
-    console.log(`[ArchitectAgent] Generated ${userStories.length} user stories`);
+    const userStories = await this.generateUserStories(
+      semanticMap,
+      userContext,
+    );
+    console.log(
+      `[ArchitectAgent] Generated ${userStories.length} user stories`,
+    );
 
     // Step 3: Design wireframes
-    const wireframes = await this.designWireframes(semanticMap, userContext, visualResearch);
+    const wireframes = await this.designWireframes(
+      semanticMap,
+      userContext,
+      visualResearch,
+    );
     console.log(`[ArchitectAgent] Designed ${wireframes.length} wireframes`);
 
     // Step 4: Generate coding prompts
@@ -96,7 +108,9 @@ export class ArchitectAgent extends Agent<Env, ArchitectState> {
       wireframes,
       visualResearch.componentRecommendations,
     );
-    console.log(`[ArchitectAgent] Generated ${codingPrompts.length} coding prompts`);
+    console.log(
+      `[ArchitectAgent] Generated ${codingPrompts.length} coding prompts`,
+    );
 
     // Assemble the final report
     const report: UXResearchReport = {
@@ -130,7 +144,8 @@ export class ArchitectAgent extends Agent<Env, ArchitectState> {
     context: UXResearchReport["context"];
   }> {
     const tableNames = semanticMap.tables.map((t) => t.name).join(", ");
-    const apiPaths = semanticMap.apiRoutes?.map((r) => r.path).join(", ") || "N/A";
+    const apiPaths =
+      semanticMap.apiRoutes?.map((r) => r.path).join(", ") || "N/A";
 
     // Use AI to analyze context if available
     try {
@@ -151,8 +166,14 @@ Respond in JSON format:
   "context": "internal-tool" | "b2c" | "b2b-saas" | "marketplace" | "portfolio" | "other"
 }`;
 
-      const response = await queryGemini(this.env, prompt, "Analyze and respond with JSON only.");
-      const parsed = JSON.parse(response.replace(/```json\n?|\n?```/g, "").trim());
+      const response = await queryGemini(
+        this.env,
+        prompt,
+        "Analyze and respond with JSON only.",
+      );
+      const parsed = JSON.parse(
+        response.replace(/```json\n?|\n?```/g, "").trim(),
+      );
 
       return {
         targetAudience: parsed.targetAudience || "General users",
@@ -160,7 +181,9 @@ Respond in JSON format:
         context: parsed.context || "other",
       };
     } catch (e) {
-      console.warn(`[ArchitectAgent] AI analysis failed, using heuristics: ${e}`);
+      console.warn(
+        `[ArchitectAgent] AI analysis failed, using heuristics: ${e}`,
+      );
       return this.inferContextFromHeuristics(semanticMap);
     }
   }
@@ -177,7 +200,9 @@ Respond in JSON format:
   } {
     const tableNames = semanticMap.tables.map((t) => t.name.toLowerCase());
 
-    if (tableNames.some((t) => /organization|team|subscription|billing/i.test(t))) {
+    if (
+      tableNames.some((t) => /organization|team|subscription|billing/i.test(t))
+    ) {
       return {
         targetAudience: "Business teams and organizations",
         coreProblem: "Managing team workflows and subscriptions",
@@ -233,8 +258,10 @@ Respond in JSON format:
    */
   private generateStoryForTable(
     table: { name: string; fields: string[]; relationships?: string[] },
-    userContext: { targetAudience: string; context: string },
+    _userContext: { targetAudience: string; context: string },
   ): UXResearchReport["userStories"][0] | null {
+    // userContext is intentionally kept for future use
+    void _userContext;
     const tableName = table.name.toLowerCase();
     const fields = table.fields.map((f) => f.toLowerCase());
 
@@ -316,9 +343,12 @@ Respond in JSON format:
    */
   private async designWireframes(
     semanticMap: UXResearchReport["semanticMap"],
-    userContext: { targetAudience: string; context: string },
-    visualResearch: { componentRecommendations: ComponentRecommendation[] },
+    _userContext: { targetAudience: string; context: string },
+    _visualResearch: { componentRecommendations: ComponentRecommendation[] },
   ): Promise<WireframeSpec[]> {
+    // userContext and visualResearch are intentionally kept for future use
+    void _userContext;
+    void _visualResearch;
     const wireframes: WireframeSpec[] = [];
 
     // Dashboard/Home screen
@@ -457,7 +487,9 @@ Respond in JSON format:
     recommendations: ComponentRecommendation[],
   ): UXResearchReport["codingPrompts"] {
     const tableNames = semanticMap.tables.map((t) => t.name).join(", ");
-    const registryList = recommendations.map((r) => `${r.registry}: ${r.componentName}`).join("\n");
+    const registryList = recommendations
+      .map((r) => `${r.registry}: ${r.componentName}`)
+      .join("\n");
 
     return [
       {
@@ -495,18 +527,31 @@ ${registryList}
 
 ## Context
 Building on the project setup, I need to implement the core CRUD features for:
-${userStories.slice(0, 4).map((s) => `- As a ${s.asA}, I want to ${s.iWantTo} (${s.mappedTo})`).join("\n")}
+${userStories
+  .slice(0, 4)
+  .map((s) => `- As a ${s.asA}, I want to ${s.iWantTo} (${s.mappedTo})`)
+  .join("\n")}
 
 ## Database Schema
-${semanticMap.tables.slice(0, 4).map((t) => `
+${semanticMap.tables
+  .slice(0, 4)
+  .map(
+    (t) => `
 ### ${t.name}
 Fields: ${t.fields.join(", ")}
-${t.relationships ? `Relations: ${t.relationships.join(", ")}` : ""}`).join("\n")}
+${t.relationships ? `Relations: ${t.relationships.join(", ")}` : ""}`,
+  )
+  .join("\n")}
 
 ## Wireframe Reference
-${wireframes.slice(0, 2).map((w) => `
+${wireframes
+  .slice(0, 2)
+  .map(
+    (w) => `
 ### ${w.screenName} (${w.layout})
-Zones: ${w.zones.map((z) => z.name).join(", ")}`).join("\n")}
+Zones: ${w.zones.map((z) => z.name).join(", ")}`,
+  )
+  .join("\n")}
 
 ## Task
 1. Create TypeScript types matching the database schema

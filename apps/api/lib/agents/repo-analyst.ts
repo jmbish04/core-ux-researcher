@@ -63,7 +63,7 @@ export class RepoAnalystAgent extends Agent<Env, RepoAnalystState> {
    * Parse a GitHub URL into owner and repo.
    */
   private parseGitHubUrl(url: string): { owner: string; repo: string } {
-    const match = url.match(/github\.com\/([^\/]+)\/([^\/]+)/);
+    const match = url.match(/github\.com\/([^/]+)\/([^/]+)/);
     if (!match) {
       throw new Error(`Invalid GitHub URL: ${url}`);
     }
@@ -129,7 +129,12 @@ export class RepoAnalystAgent extends Agent<Env, RepoAnalystState> {
     let schemaContent = "";
     for (const schemaPath of schemaFiles.slice(0, 5)) {
       try {
-        const content = await this.fetchFileContent(octokit, owner, repo, schemaPath);
+        const content = await this.fetchFileContent(
+          octokit,
+          owner,
+          repo,
+          schemaPath,
+        );
         schemaContent += `\n// --- ${schemaPath} ---\n${content}\n`;
       } catch (e) {
         console.warn(`[RepoAnalystAgent] Could not read ${schemaPath}: ${e}`);
@@ -142,11 +147,16 @@ export class RepoAnalystAgent extends Agent<Env, RepoAnalystState> {
     const apiRouteFiles = fileTree.filter((path) =>
       API_ROUTE_PATTERNS.some((pattern) => pattern.test(path)),
     );
-    
+
     const apiRoutes: RepoAnalystState["apiRoutes"] = [];
     for (const routePath of apiRouteFiles.slice(0, 10)) {
       try {
-        const content = await this.fetchFileContent(octokit, owner, repo, routePath);
+        const content = await this.fetchFileContent(
+          octokit,
+          owner,
+          repo,
+          routePath,
+        );
         const extractedRoutes = this.extractRoutesFromFile(routePath, content);
         apiRoutes.push(...extractedRoutes);
       } catch (e) {
@@ -158,7 +168,9 @@ export class RepoAnalystAgent extends Agent<Env, RepoAnalystState> {
 
     // Step 4: Parse schema to extract tables
     const tables = this.parseSchemaToTables(schemaContent);
-    console.log(`[RepoAnalystAgent] Extracted ${tables.length} database tables`);
+    console.log(
+      `[RepoAnalystAgent] Extracted ${tables.length} database tables`,
+    );
 
     return {
       tables,
@@ -193,8 +205,18 @@ export class RepoAnalystAgent extends Agent<Env, RepoAnalystState> {
       for (const item of data) {
         if (item.type === "file") {
           files.push(item.path);
-        } else if (item.type === "dir" && !item.name.startsWith(".") && item.name !== "node_modules") {
-          const subFiles = await this.fetchFileTree(octokit, owner, repo, item.path, depth + 1);
+        } else if (
+          item.type === "dir" &&
+          !item.name.startsWith(".") &&
+          item.name !== "node_modules"
+        ) {
+          const subFiles = await this.fetchFileTree(
+            octokit,
+            owner,
+            repo,
+            item.path,
+            depth + 1,
+          );
           files.push(...subFiles);
         }
       }
@@ -235,7 +257,11 @@ export class RepoAnalystAgent extends Agent<Env, RepoAnalystState> {
     filePath: string,
     content: string,
   ): Array<{ path: string; method: string; description?: string }> {
-    const routes: Array<{ path: string; method: string; description?: string }> = [];
+    const routes: Array<{
+      path: string;
+      method: string;
+      description?: string;
+    }> = [];
 
     // Match common route patterns
     const patterns = [
@@ -266,8 +292,9 @@ export class RepoAnalystAgent extends Agent<Env, RepoAnalystState> {
     }
 
     // Dedupe and return
-    return routes.filter((r, i, arr) => 
-      arr.findIndex(x => x.path === r.path && x.method === r.method) === i
+    return routes.filter(
+      (r, i, arr) =>
+        arr.findIndex((x) => x.path === r.path && x.method === r.method) === i,
     );
   }
 
@@ -277,7 +304,11 @@ export class RepoAnalystAgent extends Agent<Env, RepoAnalystState> {
   private parseSchemaToTables(
     schemaContent: string,
   ): Array<{ name: string; fields: string[]; relationships?: string[] }> {
-    const tables: Array<{ name: string; fields: string[]; relationships?: string[] }> = [];
+    const tables: Array<{
+      name: string;
+      fields: string[];
+      relationships?: string[];
+    }> = [];
 
     // Prisma model pattern
     const prismaModelRegex = /model\s+(\w+)\s*\{([^}]+)\}/g;
@@ -285,26 +316,27 @@ export class RepoAnalystAgent extends Agent<Env, RepoAnalystState> {
     while ((match = prismaModelRegex.exec(schemaContent)) !== null) {
       const modelName = match[1];
       const bodyContent = match[2];
-      
+
       const fields: string[] = [];
       const relationships: string[] = [];
-      
+
       const lines = bodyContent.split("\n");
       for (const line of lines) {
         const trimmed = line.trim();
-        if (!trimmed || trimmed.startsWith("//") || trimmed.startsWith("@@")) continue;
-        
+        if (!trimmed || trimmed.startsWith("//") || trimmed.startsWith("@@"))
+          continue;
+
         const fieldMatch = trimmed.match(/^(\w+)\s+(\w+)/);
         if (fieldMatch) {
           fields.push(fieldMatch[1]);
-          
+
           // Check for relations
           if (trimmed.includes("@relation") || /\[\]$/.test(fieldMatch[2])) {
             relationships.push(fieldMatch[1]);
           }
         }
       }
-      
+
       tables.push({
         name: modelName,
         fields,
@@ -313,17 +345,18 @@ export class RepoAnalystAgent extends Agent<Env, RepoAnalystState> {
     }
 
     // Drizzle table pattern
-    const drizzleTableRegex = /export\s+const\s+(\w+)\s*=\s*(?:pgTable|sqliteTable|mysqlTable)\s*\(\s*['"`](\w+)['"`]\s*,\s*\{([^}]+)\}/g;
+    const drizzleTableRegex =
+      /export\s+const\s+(\w+)\s*=\s*(?:pgTable|sqliteTable|mysqlTable)\s*\(\s*['"`](\w+)['"`]\s*,\s*\{([^}]+)\}/g;
     while ((match = drizzleTableRegex.exec(schemaContent)) !== null) {
       const tableName = match[2];
       const bodyContent = match[3];
-      
+
       const fields: string[] = [];
       const fieldMatches = bodyContent.matchAll(/(\w+)\s*:/g);
       for (const fieldMatch of fieldMatches) {
         fields.push(fieldMatch[1]);
       }
-      
+
       tables.push({
         name: tableName,
         fields,

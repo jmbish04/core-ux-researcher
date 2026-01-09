@@ -7,7 +7,19 @@
  */
 
 import { Agent } from "agents";
-import type { AgentPhase, UXResearchReport, UXResearchRequest } from "../zod-schema";
+import type {
+  AgentPhase,
+  UXResearchReport,
+  UXResearchRequest,
+} from "../zod-schema";
+
+/**
+ * Durable Object stub interface for RPC calls.
+ */
+interface DurableObjectStub {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: (...args: unknown[]) => Promise<any>;
+}
 
 /**
  * State interface for the UX Orchestrator Agent.
@@ -49,7 +61,11 @@ export class UXOrchestratorAgent extends Agent<Env, UXOrchestratorState> {
   /**
    * Initialize default state for a new research session.
    */
-  private initializeState(requestId: string, repoUrl: string, userIntent?: string): UXOrchestratorState {
+  private initializeState(
+    requestId: string,
+    repoUrl: string,
+    userIntent?: string,
+  ): UXOrchestratorState {
     return {
       requestId,
       repoUrl,
@@ -64,14 +80,18 @@ export class UXOrchestratorAgent extends Agent<Env, UXOrchestratorState> {
   /**
    * Append a log entry and broadcast to connected clients.
    */
-  private log(level: "info" | "warn" | "error", message: string, data?: unknown) {
+  private log(
+    level: "info" | "warn" | "error",
+    message: string,
+    data?: unknown,
+  ) {
     const entry = {
       timestamp: new Date().toISOString(),
       level,
       message,
       data,
     };
-    
+
     const currentState = this.state || this.initializeState("", "");
     this.setState({
       ...currentState,
@@ -93,7 +113,7 @@ export class UXOrchestratorAgent extends Agent<Env, UXOrchestratorState> {
       phase,
       progress,
     });
-    
+
     this.broadcast("phase", { phase, progress });
   }
 
@@ -135,9 +155,13 @@ export class UXOrchestratorAgent extends Agent<Env, UXOrchestratorState> {
     payload: UXResearchRequest,
   ): Promise<{ status: string }> {
     // Initialize state
-    this.setState(this.initializeState(requestId, payload.repoUrl, payload.userIntent));
-    
-    this.log("info", "🚀 Starting UX Research workflow", { repoUrl: payload.repoUrl });
+    this.setState(
+      this.initializeState(requestId, payload.repoUrl, payload.userIntent),
+    );
+
+    this.log("info", "🚀 Starting UX Research workflow", {
+      repoUrl: payload.repoUrl,
+    });
     this.setPhase("idle", 0);
 
     // Run the workflow asynchronously
@@ -155,44 +179,63 @@ export class UXOrchestratorAgent extends Agent<Env, UXOrchestratorState> {
       // Phase 1: Repository Analysis
       this.setPhase("analyzing_repo", 0.05);
       this.log("info", "📊 Phase 1: Analyzing repository structure...");
-      
+
       const semanticMap = await this.runRepoAnalyst(requestId, payload.repoUrl);
-      
+
       const currentState = this.state!;
       this.setState({ ...currentState, semanticMap });
-      this.log("info", `✅ Found ${semanticMap.tables.length} database tables`, { tables: semanticMap.tables.map(t => t.name) });
+      this.log(
+        "info",
+        `✅ Found ${semanticMap.tables.length} database tables`,
+        { tables: semanticMap.tables.map((t) => t.name) },
+      );
 
       // Phase 2: Visual Research
       this.setPhase("browsing_registries", 0.35);
       this.log("info", "🎨 Phase 2: Scouting component registries...");
-      
-      const visualResearch = await this.runStyleScout(requestId, semanticMap, payload.targetRegistries);
-      
+
+      const visualResearch = await this.runStyleScout(
+        requestId,
+        semanticMap,
+        payload.targetRegistries,
+      );
+
       this.setState({ ...this.state!, visualResearch });
-      this.log("info", `📸 Captured ${visualResearch.moodBoard.length} screenshots`, { 
-        recommendations: visualResearch.componentRecommendations.length 
-      });
+      this.log(
+        "info",
+        `📸 Captured ${visualResearch.moodBoard.length} screenshots`,
+        {
+          recommendations: visualResearch.componentRecommendations.length,
+        },
+      );
 
       // Phase 3: Architecture & Report Generation
       this.setPhase("synthesizing", 0.7);
       this.log("info", "🧠 Phase 3: Synthesizing architecture report...");
-      
-      const finalReport = await this.runArchitect(requestId, semanticMap, visualResearch, payload);
-      
+
+      const finalReport = await this.runArchitect(
+        requestId,
+        semanticMap,
+        visualResearch,
+        payload,
+      );
+
       this.setState({ ...this.state!, finalReport });
       this.log("info", "📝 Generated final UX Research Report");
 
       // Complete
       this.setPhase("complete", 1.0);
       this.log("info", "🎉 UX Research workflow complete!");
-      
+
       // Broadcast the final report
       this.broadcast("report", finalReport);
-
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       this.setPhase("error", this.state?.progress || 0);
-      this.log("error", `❌ Workflow failed: ${errorMessage}`, { error: errorMessage });
+      this.log("error", `❌ Workflow failed: ${errorMessage}`, {
+        error: errorMessage,
+      });
     }
   }
 
@@ -204,14 +247,16 @@ export class UXOrchestratorAgent extends Agent<Env, UXOrchestratorState> {
     repoUrl: string,
   ): Promise<UXResearchReport["semanticMap"]> {
     this.log("info", "🔍 Delegating to RepoAnalyst...");
-    
+
     // Get the RepoAnalyst Durable Object stub
     const analystId = this.env.REPO_ANALYST.idFromName(requestId);
-    const analystStub = this.env.REPO_ANALYST.get(analystId);
-    
+    const analystStub = this.env.REPO_ANALYST.get(
+      analystId,
+    ) as DurableObjectStub;
+
     // Call the agent's analyze method via RPC
-    const result = await (analystStub as any).analyze(requestId, repoUrl);
-    
+    const result = await analystStub.analyze(requestId, repoUrl);
+
     return result;
   }
 
@@ -227,14 +272,18 @@ export class UXOrchestratorAgent extends Agent<Env, UXOrchestratorState> {
     componentRecommendations: UXResearchReport["recommendedStack"];
   }> {
     this.log("info", "🎯 Delegating to StyleScout...");
-    
+
     // Get the StyleScout Durable Object stub
     const scoutId = this.env.STYLE_SCOUT.idFromName(requestId);
-    const scoutStub = this.env.STYLE_SCOUT.get(scoutId);
-    
+    const scoutStub = this.env.STYLE_SCOUT.get(scoutId) as DurableObjectStub;
+
     // Call the agent's scout method via RPC
-    const result = await (scoutStub as any).scout(requestId, semanticMap, targetRegistries);
-    
+    const result = await scoutStub.scout(
+      requestId,
+      semanticMap,
+      targetRegistries,
+    );
+
     return result;
   }
 
@@ -251,38 +300,48 @@ export class UXOrchestratorAgent extends Agent<Env, UXOrchestratorState> {
     payload: UXResearchRequest,
   ): Promise<UXResearchReport> {
     this.log("info", "🏗️ Delegating to Architect...");
-    
+
     // Get the Architect Durable Object stub
     const architectId = this.env.ARCHITECT.idFromName(requestId);
-    const architectStub = this.env.ARCHITECT.get(architectId);
-    
+    const architectStub = this.env.ARCHITECT.get(
+      architectId,
+    ) as DurableObjectStub;
+
     // Call the agent's synthesize method via RPC
-    const result = await (architectStub as any).synthesize(
+    const result = await architectStub.synthesize(
       requestId,
       semanticMap,
       visualResearch,
       payload,
     );
-    
+
     return result;
   }
 
   /**
    * Handle WebSocket messages.
    */
-  override async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer) {
+  override async webSocketMessage(
+    ws: WebSocket,
+    message: string | ArrayBuffer,
+  ) {
     try {
-      const text = typeof message === "string" ? message : new TextDecoder().decode(message);
+      const text =
+        typeof message === "string"
+          ? message
+          : new TextDecoder().decode(message);
       const obj = JSON.parse(text);
-      
+
       if (obj?.type === "ping") {
         ws.send(JSON.stringify({ type: "pong", ts: new Date().toISOString() }));
       } else if (obj?.type === "status") {
-        ws.send(JSON.stringify({
-          type: "status",
-          phase: this.state?.phase || "idle",
-          progress: this.state?.progress || 0,
-        }));
+        ws.send(
+          JSON.stringify({
+            type: "status",
+            phase: this.state?.phase || "idle",
+            progress: this.state?.progress || 0,
+          }),
+        );
       }
     } catch {
       ws.send(JSON.stringify({ type: "ack" }));
