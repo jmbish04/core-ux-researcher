@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic Workspace Architecture | Research Blueprint</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom Styles & Overrides */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f5f4; /* Stone 100 */
+            color: #1c1917; /* Stone 900 */
+        }
+        h1, h2, h3, .mono-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        /* Architecture Block Styles */
+        .arch-block {
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+        }
+        .arch-block:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .arch-block.active {
+            border-color: #0f766e; /* Teal 700 */
+            background-color: #f0fdfa; /* Teal 50 */
+            box-shadow: 0 0 0 2px #0f766e;
+        }
+        /* Simulation Step Animation */
+        .sim-step {
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        .sim-step.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* Hide scrollbar for clean horizontal scroll */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Tab Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        /* JSON Syntax Highlighting */
+        .json-key { color: #9cdcfe; }
+        .json-string { color: #ce9178; }
+        .json-number { color: #b5cea8; }
+        .json-bool { color: #569cd6; }
+    </style>
+</head>
+<body class="bg-stone-100 text-stone-800 antialiased selection:bg-teal-200 selection:text-teal-900">
+
+    <!-- Main Container -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+        <!-- Header Section -->
+        <header class="bg-white border-l-4 border-teal-600 shadow-sm rounded-r-lg p-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold text-stone-900 mb-2">Agentic Workspace Blueprint</h1>
+                    <p class="text-stone-600 text-sm md:text-base max-w-2xl">
+                        Technical specification for a hybrid architecture: <strong>Cloudflare Workers</strong> (Backend Brain) + <strong>Google Apps Script</strong> (Frontend Interface).
+                        Incorporates <strong>Hierarchical Orchestration</strong> and <strong>Planning Agents</strong>.
+                    </p>
+                </div>
+                <div class="mt-4 md:mt-0 px-4 py-2 bg-stone-100 rounded text-xs font-mono text-stone-500">
+                    Role: Principal Architect<br>
+                    Status: Research Phase
+                </div>
+            </div>
+        </header>
+
+        <!-- Top Row: Architecture & Feasibility -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Interactive Architecture Map (2/3 width) -->
+            <section class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden flex flex-col">
+                <div class="p-5 border-b border-stone-100">
+                    <h2 class="text-lg font-bold flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-teal-500"></span>
+                        System Architecture Map
+                    </h2>
+                    <p class="text-xs text-stone-500 mt-1">Click a component to reveal specification details.</p>
+                </div>
+
+                <!-- The Map (CSS Grid) -->
+                <div class="p-6 bg-stone-50 flex-grow flex flex-col justify-center">
+                    <!-- Layer Labels -->
+                    <div class="flex justify-between text-xs font-mono text-stone-400 mb-2 px-2">
+                        <span>USER LAYER (Google)</span>
+                        <span>BRIDGE</span>
+                        <span>COMPUTE LAYER (Cloudflare)</span>
+                        <span>DATA LAYER</span>
+                    </div>
+
+                    <!-- Diagram Container -->
+                    <div class="grid grid-cols-4 gap-4 relative">
+                        <!-- Connecting "Lines" (Simulated with borders/positioning) -->
+                        <div class="absolute top-1/2 left-0 w-full h-1 bg-stone-200 -z-0"></div>
+
+                        <!-- Node 1: Apps Script -->
+                        <div onclick="selectArch('frontend')" id="node-frontend" class="arch-block relative z-10 bg-white border-2 border-blue-200 p-4 rounded-lg text-center h-32 flex flex-col items-center justify-center hover:border-blue-400">
+                            <span class="text-2xl mb-2">⚡</span>
+                            <span class="font-bold text-sm text-stone-800">Apps Script</span>
+                            <span class="text-[10px] text-stone-500">Adaptive UI / Renderer</span>
+                        </div>
+
+                        <!-- Node 2: Auth Bridge -->
+                        <div onclick="selectArch('auth')" id="node-auth" class="arch-block relative z-10 bg-white border-2 border-orange-200 p-4 rounded-lg text-center h-32 flex flex-col items-center justify-center hover:border-orange-400">
+                            <span class="text-2xl mb-2">🔐</span>
+                            <span class="font-bold text-sm text-stone-800">Auth Bridge</span>
+                            <span class="text-[10px] text-stone-500">OAuth2 / Service Acct</span>
+                        </div>
+
+                        <!-- Node 3: Worker / Agents -->
+                        <div onclick="selectArch('worker')" id="node-worker" class="arch-block relative z-10 bg-white border-2 border-teal-200 p-4 rounded-lg text-center h-32 flex flex-col items-center justify-center hover:border-teal-400">
+                            <span class="text-2xl mb-2">⚙️</span>
+                            <span class="font-bold text-sm text-stone-800">CF Workers</span>
+                            <span class="text-[10px] text-stone-500">Planning & Review Agents</span>
+                        </div>
+
+                        <!-- Node 4: Storage -->
+                        <div onclick="selectArch('storage')" id="node-storage" class="arch-block relative z-10 bg-white border-2 border-indigo-200 p-4 rounded-lg text-center h-32 flex flex-col items-center justify-center hover:border-indigo-400">
+                            <span class="text-2xl mb-2">💾</span>
+                            <span class="font-bold text-sm text-stone-800">D1 & Vectorize</span>
+                            <span class="text-[10px] text-stone-500">State Checkpoints</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detail Panel -->
+                <div class="bg-stone-100 p-5 border-t border-stone-200 min-h-[140px]">
+                    <h3 id="detail-title" class="font-bold text-stone-800 text-sm mb-2">Select a component above...</h3>
+                    <p id="detail-desc" class="text-sm text-stone-600 leading-relaxed">Interact with the architecture map to understand the specific role of each component in the Agentic Workspace.</p>
+                </div>
+            </section>
+
+            <!-- Feasibility Radar Chart (1/3 width) -->
+            <section class="lg:col-span-1 bg-white rounded-xl shadow-sm border border-stone-200 p-5 flex flex-col">
+                <h2 class="text-lg font-bold mb-1">Stack Comparison</h2>
+                <p class="text-xs text-stone-500 mb-4">Native Apps Script vs. Cloudflare Agentic</p>
+                <div class="flex-grow flex items-center justify-center">
+                    <div class="chart-container">
+                        <canvas id="feasibilityChart"></canvas>
+                    </div>
+                </div>
+                <div class="mt-4 text-xs text-center text-stone-400 italic">
+                    Based on API limits and architectural capability.
+                </div>
+            </section>
+        </div>
+
+        <!-- Middle Row: Interactive Simulation -->
+        <section class="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
+            <div class="p-6 border-b border-stone-100 bg-stone-50">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-stone-800">Workflow Simulator</h2>
+                        <p class="text-sm text-stone-600 mt-1">Visualize the <span class="text-teal-600 font-bold">Plan -> Execute -> Review</span> cycle.</p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <select id="sim-selector" class="bg-white border border-stone-300 text-stone-700 text-sm rounded-lg focus:ring-teal-500 focus:border-teal-500 block p-2.5">
+                            <option value="create_doc">Simulate: Doc Creation (Resume w/ Review)</option>
+                            <option value="create_slides">Simulate: Slides Creation (7x7 Rule Check)</option>
+                            <option value="create_sheets">Simulate: Sheets (Backlog & Gantt)</option>
+                            <option value="orchestrate_email">Simulate: Email Orchestration (LangGraph)</option>
+                        </select>
+                        <button onclick="runSimulation()" class="text-white bg-teal-700 hover:bg-teal-800 focus:ring-4 focus:ring-teal-300 font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none transition-colors">
+                            Execute Agent
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Terminal Output Area -->
+            <div class="p-6 bg-stone-900 text-teal-400 font-mono text-xs md:text-sm h-72 overflow-y-auto rounded-b-xl shadow-inner relative" id="console-output">
+                <div class="absolute top-4 right-4 text-stone-600 select-none">CONSOLE_OUT</div>
+                <div id="sim-logs" class="space-y-2">
+                    <p class="text-stone-500">// System ready. Select a complex workflow to simulate.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bottom Row: Deep Research Modules (Tabs) -->
+        <section class="bg-white rounded-xl shadow-sm border border-stone-200">
+            <div class="p-6 border-b border-stone-100">
+                <h2 class="text-xl font-bold text-stone-800">Domain Specific Research</h2>
+                <p class="text-stone-600 mt-2">Deep dive into specific implementation strategies for each Workspace application.</p>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="border-b border-stone-200 overflow-x-auto">
+                <nav class="flex -mb-px px-6" aria-label="Tabs">
+                    <button onclick="switchTab('orchestration')" id="tab-orchestration" class="tab-btn active border-teal-500 text-teal-600 whitespace-nowrap py-4 px-4 border-b-2 font-medium text-sm transition-colors">
+                        Orchestration Patterns
+                    </button>
+                    <button onclick="switchTab('editors')" id="tab-editors" class="tab-btn border-transparent text-stone-500 hover:text-stone-700 hover:border-stone-300 whitespace-nowrap py-4 px-4 border-b-2 font-medium text-sm transition-colors">
+                        Editors: Collaboration
+                    </button>
+                    <button onclick="switchTab('gmail')" id="tab-gmail" class="tab-btn border-transparent text-stone-500 hover:text-stone-700 hover:border-stone-300 whitespace-nowrap py-4 px-4 border-b-2 font-medium text-sm transition-colors">
+                        Gmail: Drafting
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="p-6 bg-stone-50 min-h-[300px]">
+
+                <!-- Orchestration Content -->
+                <div id="content-orchestration" class="tab-content block animate-fade-in">
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div>
+                            <h3 class="text-teal-800 font-bold mb-3">LangGraph Orchestrator Pattern</h3>
+                            <p class="text-xs text-stone-500 mb-3">Adapted from <code>MAQuesada/Google-Workspace-Agent</code> to run on Cloudflare Workers.</p>
+                            <ul class="space-y-3 text-sm text-stone-700">
+                                <li class="flex items-start gap-2">
+                                    <span class="text-teal-500 font-bold">1.</span>
+                                    <span><strong>The Planning Phase:</strong> Before any API call, the Agent creates a JSON Blueprint. This allows for validation (e.g., "7x7 Rule" in Slides) and structural integrity checks (Gantt logic in Sheets).</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-teal-500 font-bold">2.</span>
+                                    <span><strong>Review Agents:</strong> A secondary agent loop that:
+                                        <ul class="list-disc pl-4 mt-1 text-xs text-stone-600 space-y-1">
+                                            <li>Fetches the raw HTML/content after generation.</li>
+                                            <li>Checks against best practices (accessibility, formatting).</li>
+                                            <li>Applies "Self-Healing" fixes before notifying the user.</li>
+                                        </ul>
+                                    </span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg border border-stone-200 shadow-sm">
+                            <h4 class="font-mono text-xs font-bold text-stone-400 mb-2">PATTERN: PLAN -> EXECUTE -> REVIEW</h4>
+                            <div class="flex flex-col gap-2 items-center">
+                                <div class="w-full p-2 bg-stone-800 text-teal-400 rounded text-center text-xs font-mono border border-stone-700">
+                                    PHASE 1: PLAN (JSON Blueprint)
+                                </div>
+                                <div class="h-4 w-px bg-stone-300"></div>
+                                <div class="w-full p-2 bg-teal-600 text-white rounded text-center text-xs font-mono border border-teal-700">
+                                    PHASE 2: EXECUTE (Batch API)
+                                </div>
+                                <div class="h-4 w-px bg-stone-300"></div>
+                                <div class="w-full p-2 bg-indigo-50 text-indigo-800 rounded text-center text-xs font-mono border border-indigo-200">
+                                    PHASE 3: REVIEW (HTML Fetch & Fix)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Editors Content -->
+                <div id="content-editors" class="tab-content hidden">
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div>
+                            <h3 class="text-teal-800 font-bold mb-3">Active Collaboration & Creation</h3>
+                            <ul class="space-y-3 text-sm text-stone-700">
+                                <li class="flex items-start gap-2">
+                                    <span class="text-teal-500 font-bold">1.</span>
+                                    <span><strong>Resume Builder:</strong> Agent creates an outline, fills sections, and then <em>reads back</em> the HTML to ensure consistent header spacing and font usage.</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-teal-500 font-bold">2.</span>
+                                    <span><strong>Presentation Architect:</strong> Agent generates a JSON plan for slides. It validates content density (7x7 rule) and ensures speaker notes are present for every slide.</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-teal-500 font-bold">3.</span>
+                                    <span><strong>Sheet Architect:</strong> Creates multi-tab spreadsheets by defining schema first. Handles formula propagation (dragging down rows) and freezing headers via <code>batchUpdate</code>.</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gmail Content -->
+                <div id="content-gmail" class="tab-content hidden">
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div>
+                            <h3 class="text-teal-800 font-bold mb-3">Context-Aware Drafting</h3>
+                            <p class="text-sm text-stone-700">Includes Domain-Graph extraction and Hierarchical Voice Tuning to match specific client relationships.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- State Management ---
+        const appState = {
+            currentTab: 'orchestration',
+            simulationRunning: false,
+            selectedArchNode: null
+        };
+
+        // --- Data: Architecture Details ---
+        const archDetails = {
+            frontend: {
+                title: "Frontend: Google Apps Script",
+                desc: "Renderer Pattern. Acts as a dumb terminal. Receives JSON from Worker and renders Cards/Modals."
+            },
+            auth: {
+                title: "Auth Bridge",
+                desc: "OAuth2 & Service Accounts. Enables background agents to run without browser tabs open."
+            },
+            worker: {
+                title: "Backend: CF Workers",
+                desc: "The Orchestrator. Runs Planning Agents, generates JSON Blueprints, and executes Batch APIs."
+            },
+            storage: {
+                title: "Data: D1 & Vectorize",
+                desc: "Stores User Context, Embeddings, and Agent State Checkpoints."
+            }
+        };
+
+        // --- Interaction: Architecture Map ---
+        function selectArch(nodeId) {
+            document.querySelectorAll('.arch-block').forEach(el => {
+                el.classList.remove('active', 'bg-teal-50');
+            });
+            const selected = document.getElementById(`node-${nodeId}`);
+            selected.classList.add('active');
+            
+            const info = archDetails[nodeId];
+            const titleEl = document.getElementById('detail-title');
+            const descEl = document.getElementById('detail-desc');
+            titleEl.textContent = info.title;
+            descEl.textContent = info.desc;
+        }
+
+        // --- Interaction: Tabs ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active', 'border-teal-500', 'text-teal-600');
+                btn.classList.add('border-transparent', 'text-stone-500');
+            });
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            activeBtn.classList.remove('border-transparent', 'text-stone-500');
+            activeBtn.classList.add('active', 'border-teal-500', 'text-teal-600');
+
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            const activeContent = document.getElementById(`content-${tabId}`);
+            activeContent.classList.remove('hidden');
+            activeContent.classList.remove('animate-fade-in');
+            void activeContent.offsetWidth; 
+            activeContent.classList.add('animate-fade-in');
+        }
+
+        // --- Helper: Colorize JSON ---
+        function syntaxHighlight(json) {
+            if (typeof json != 'string') {
+                json = JSON.stringify(json, undefined, 2);
+            }
+            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                var cls = 'json-number';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'json-key';
+                    } else {
+                        cls = 'json-string';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'json-bool';
+                } else if (/null/.test(match)) {
+                    cls = 'json-null';
+                }
+                return '<span class="' + cls + '">' + match + '</span>';
+            });
+        }
+
+        // --- Interaction: Simulation ---
+        async function runSimulation() {
+            if (appState.simulationRunning) return;
+            appState.simulationRunning = true;
+
+            const type = document.getElementById('sim-selector').value;
+            const consoleEl = document.getElementById('sim-logs');
+            consoleEl.innerHTML = ''; 
+
+            let logs = [];
+
+            // --- SCENARIO 1: DOC CREATION (RESUME) ---
+            if (type === 'create_doc') {
+                logs = [
+                    { text: "> User Prompt: 'Create my Resume. Senior Dev, 10yrs exp.'", delay: 500 },
+                    { text: "> <span class='text-teal-400'>[PHASE 1: PLANNING]</span> Generating Document Outline...", delay: 1000 },
+                    { 
+                        text: syntaxHighlight({
+                            "title": "Resume_John_Doe",
+                            "sections": [
+                                { "type": "Header", "content": "Contact Info" },
+                                { "type": "Experience", "entries": 3 },
+                                { "type": "Skills", "format": "2-column-list" }
+                            ]
+                        }), 
+                        delay: 1800 
+                    },
+                    { text: "> <span class='text-yellow-500'>[PHASE 2: EXECUTION]</span> Writing Header...", delay: 2800 },
+                    { text: "> [EXEC] Writing Experience Section (3 jobs)...", delay: 3500 },
+                    { text: "> [EXEC] Writing Skills Section...", delay: 4200 },
+                    { text: "> <span class='text-indigo-400'>[PHASE 3: REVIEW AGENT]</span> Fetching document HTML...", delay: 5000 },
+                    { text: "> [REVIEW] Analyzing formatting consistency...", delay: 5800 },
+                    { text: "> <span class='text-red-400'>[ISSUE DETECTED]</span> H2 spacing inconsistent in 'Skills'.", delay: 6500 },
+                    { text: "> <span class='text-teal-400'>[FIX]</span> Applied 'Heading 2' style via API update.", delay: 7200 },
+                    { text: "<span class='text-white bg-teal-600 px-1'>SUCCESS</span> Resume created & verified.", delay: 7800 }
+                ];
+            } 
+            
+            // --- SCENARIO 2: SLIDES CREATION (7x7 RULE) ---
+            else if (type === 'create_slides') {
+                logs = [
+                    { text: "> User Prompt: 'Pitch Deck for 'Project Alpha''", delay: 500 },
+                    { text: "> <span class='text-teal-400'>[PHASE 1: PLANNING]</span> Architecting Deck...", delay: 1200 },
+                    { 
+                        text: syntaxHighlight({
+                            "slide1": { "layout": "TITLE", "notes": "Intro Hook" },
+                            "slide2": { 
+                                "layout": "2_COL_BODY", 
+                                "left": "Problem Statement",
+                                "right": "Data Points (3 bullets)",
+                                "check": "7x7_RULE_PASS"
+                            },
+                            "slide3": { "layout": "MAIN_POINT", "notes": "The Solution" }
+                        }), 
+                        delay: 2200 
+                    },
+                    { text: "> <span class='text-yellow-500'>[CHECK]</span> Validating Content Density...", delay: 3000 },
+                    { text: "> [CHECK] Slide 2 passes '7x7 Rule' (Lines < 7, Words < 7 per line).", delay: 3800 },
+                    { text: "> [CHECK] Speaker Notes present for all slides.", delay: 4200 },
+                    { text: "> <span class='text-indigo-400'>[PHASE 2: EXECUTION]</span> Creating Presentation...", delay: 5000 },
+                    { text: "> [EXEC] BatchUpdate: Inserting 5 Slides...", delay: 5800 },
+                    { text: "> [EXEC] BatchUpdate: Applying 'Corporate' Theme...", delay: 6500 },
+                    { text: "<span class='text-white bg-teal-600 px-1'>SUCCESS</span> Deck created with notes.", delay: 7200 }
+                ];
+            }
+
+            // --- SCENARIO 3: SHEETS CREATION (BACKLOG) ---
+            else if (type === 'create_sheets') {
+                logs = [
+                    { text: "> User Prompt: 'Project Backlog with Gantt Chart'", delay: 500 },
+                    { text: "> <span class='text-teal-400'>[PHASE 1: PLANNING]</span> Structuring Workbook...", delay: 1200 },
+                    { 
+                        text: syntaxHighlight({
+                            "tab1": { "name": "Epics", "cols": ["ID", "Name", "Status"], "freeze": 1 },
+                            "tab2": { 
+                                "name": "Tasks", 
+                                "validation": { "col_B": "List from Epics!A:A" }, 
+                                "formulas": { "col_D": "=VLOOKUP(B2, Epics!A:B, 2, 0)" }
+                            },
+                            "tab3": { "name": "Gantt_View", "type": "Chart" }
+                        }), 
+                        delay: 2500 
+                    },
+                    { text: "> <span class='text-yellow-500'>[PHASE 2: EXECUTION]</span> Creating Tabs...", delay: 3500 },
+                    { text: "> [EXEC] Formatting Header Rows (Bold, Frozen)...", delay: 4200 },
+                    { text: "> [EXEC] Applying Data Validation to Task Tab (Epics Dropdown)...", delay: 5000 },
+                    { text: "> [EXEC] Dragging Formulas down 100 rows...", delay: 5800 },
+                    { text: "> [EXEC] Generating Gantt Visualization...", delay: 6500 },
+                    { text: "<span class='text-white bg-teal-600 px-1'>SUCCESS</span> Workbook ready.", delay: 7000 }
+                ];
+            }
+
+            // --- SCENARIO 4: EMAIL ORCHESTRATION ---
+            else if (type === 'orchestrate_email') {
+                logs = [
+                    { text: "> User: 'Schedule meeting next Tuesday with client X'", delay: 500 },
+                    { text: "> <span class='text-teal-400'>ORCHESTRATOR:</span> Analyzed Intent -> Routing to Managers...", delay: 1200 },
+                    { text: "> 1. [DateManager]: Parsing 'Next Tuesday' -> '2025-11-04T10:00:00Z'", delay: 2000 },
+                    { text: "> 2. [ContactsManager]: Searching 'Client X' -> 'jane@clientx.com'", delay: 2800 },
+                    { text: "> 3. [CalendarManager]: Checking Availability...", delay: 3500 },
+                    { text: "> <span class='text-yellow-500'>SYNTHESIZER (Verify):</span> Have Date? Yes. Have Email? Yes. Slot Free? Yes.", delay: 4500 },
+                    { text: "> <span class='text-teal-400'>ACTION:</span> Calendar.Events.Insert executed.", delay: 5200 },
+                    { text: "<span class='text-white bg-teal-600 px-1'>COMPLETE</span> Invite sent.", delay: 5800 }
+                ];
+            }
+
+            // Execute logs
+            for (let log of logs) {
+                await new Promise(r => setTimeout(r, log.delay - (logs[logs.indexOf(log)-1]?.delay || 0)));
+                const p = document.createElement('div');
+                p.className = "sim-step font-mono border-l-2 border-stone-700 pl-2 mb-1";
+                // If log text is JSON, wrap it in a pre tag for better formatting
+                if (log.text.includes('<span class="json-key">')) {
+                    p.innerHTML = `<pre class="whitespace-pre-wrap text-[10px] bg-black bg-opacity-30 p-2 rounded border border-stone-700 mt-1">${log.text}</pre>`;
+                } else {
+                    p.innerHTML = log.text;
+                }
+                consoleEl.appendChild(p);
+                requestAnimationFrame(() => p.classList.add('visible'));
+                document.getElementById('console-output').scrollTop = document.getElementById('console-output').scrollHeight;
+            }
+
+            appState.simulationRunning = false;
+        }
+
+        // --- Chart.js Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const ctx = document.getElementById('feasibilityChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Context Window', 'Execution Time', 'State Persistence', 'Cost Efficiency', 'Dev Complexity', 'Latency'],
+                    datasets: [{
+                        label: 'Cloudflare Agentic',
+                        data: [90, 95, 100, 85, 40, 80], 
+                        fill: true,
+                        backgroundColor: 'rgba(20, 184, 166, 0.2)', 
+                        borderColor: 'rgb(20, 184, 166)',
+                        pointBackgroundColor: 'rgb(20, 184, 166)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(20, 184, 166)'
+                    }, {
+                        label: 'Native Apps Script',
+                        data: [30, 20, 40, 90, 90, 60], 
+                        fill: true,
+                        backgroundColor: 'rgba(120, 113, 108, 0.2)', 
+                        borderColor: 'rgb(120, 113, 108)',
+                        pointBackgroundColor: 'rgb(120, 113, 108)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(120, 113, 108)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    elements: { line: { borderWidth: 2 } },
+                    scales: {
+                        r: {
+                            angleLines: { color: '#e7e5e4' },
+                            grid: { color: '#e7e5e4' },
+                            pointLabels: { font: { size: 10, family: 'Inter' }, color: '#57534e' },
+                            ticks: { display: false, backdropColor: 'transparent' }
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { font: { family: 'Inter' }, usePointStyle: true } }
+                    }
+                }
+            });
+
+            // Initialize Architecture
+            selectArch('worker');
+        });
+    </script>
+</body>
+</html>

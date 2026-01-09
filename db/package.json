@@ -1,0 +1,49 @@
+{
+  "name": "@repo/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./schema": "./schema/index.ts",
+    "./schema/*": "./schema/*"
+  },
+  "scripts": {
+    "generate": "drizzle-kit generate",
+    "generate:staging": "cross-env ENVIRONMENT=staging drizzle-kit generate",
+    "generate:prod": "cross-env ENVIRONMENT=prod drizzle-kit generate",
+    "migrate": "drizzle-kit migrate",
+    "migrate:staging": "cross-env ENVIRONMENT=staging drizzle-kit migrate",
+    "migrate:prod": "cross-env ENVIRONMENT=prod drizzle-kit migrate",
+    "push": "drizzle-kit push",
+    "push:staging": "cross-env ENVIRONMENT=staging drizzle-kit push",
+    "push:prod": "cross-env ENVIRONMENT=prod drizzle-kit push",
+    "studio": "drizzle-kit studio",
+    "studio:staging": "cross-env ENVIRONMENT=staging drizzle-kit studio",
+    "studio:prod": "cross-env ENVIRONMENT=prod drizzle-kit studio",
+    "seed": "tsx scripts/seed.ts",
+    "seed:staging": "cross-env ENVIRONMENT=staging tsx scripts/seed.ts",
+    "seed:prod": "cross-env ENVIRONMENT=prod tsx scripts/seed.ts",
+    "export": "tsx scripts/export.ts",
+    "export:staging": "cross-env ENVIRONMENT=staging tsx scripts/export.ts",
+    "export:prod": "cross-env ENVIRONMENT=prod tsx scripts/export.ts",
+    "introspect": "drizzle-kit introspect",
+    "up": "drizzle-kit up",
+    "check": "drizzle-kit check",
+    "drop": "drizzle-kit drop",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "drizzle-orm": "^0.45.0"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^25.0.3",
+    "cross-env": "^10.1.0",
+    "dotenv": "^17.2.3",
+    "drizzle-kit": "^0.31.8",
+    "drizzle-orm": "^0.45.0",
+    "tsx": "^4.19.4",
+    "typescript": "~5.9.3"
+  }
+}

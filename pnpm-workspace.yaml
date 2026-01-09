@@ -1,0 +1,12 @@
+packages:
+  - apps/*
+  - db
+  - packages/*
+  - scripts
+ignoredBuiltDependencies:
+  - "@swc/core"
+  - esbuild
+  - protobufjs
+  - sharp
+  - unrs-resolver
+  - workerd
