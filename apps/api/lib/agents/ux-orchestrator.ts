@@ -156,6 +156,22 @@ export class UXOrchestratorAgent extends Agent<Env, UXOrchestratorState> {
       return new Response(null, { status: 101, webSocket: client });
     }
 
+    // Start workflow endpoint
+    if (url.pathname === "/start" && request.method === "POST") {
+      try {
+        const { requestId, input } = (await request.json()) as {
+          requestId: string;
+          input: UXResearchRequest;
+        };
+        const result = await this.start(requestId, input);
+        return Response.json(result);
+      } catch (e) {
+        const error = e instanceof Error ? e.message : "Bad request";
+        this.log("error", `Failed to start workflow: ${error}`);
+        return new Response(error, { status: 400 });
+      }
+    }
+
     // Status endpoint
     if (url.pathname === "/status") {
       return Response.json({

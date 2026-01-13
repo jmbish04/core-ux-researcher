@@ -491,6 +491,11 @@ Respond in JSON format:
       .map((r) => `${r.registry}: ${r.componentName}`)
       .join("\n");
 
+    // Pre-find the dashboard wireframe to avoid duplicate lookups
+    const dashboardWireframe = wireframes.find(
+      (w) => w.screenName === "Dashboard",
+    );
+
     return [
       {
         title: "Project Setup & Theme Configuration",
@@ -586,7 +591,7 @@ Creating the main dashboard view with analytics and metrics.
 Tables: ${tableNames}
 
 ## Wireframe
-${wireframes.find((w) => w.screenName === "Dashboard") ? JSON.stringify(wireframes.find((w) => w.screenName === "Dashboard")?.zones, null, 2) : "See Dashboard wireframe above"}
+${dashboardWireframe ? JSON.stringify(dashboardWireframe.zones, null, 2) : "See Dashboard wireframe above"}
 
 ## Task
 1. Create metric cards showing key stats:
