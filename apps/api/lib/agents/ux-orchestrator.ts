@@ -128,7 +128,7 @@ export class UXOrchestratorAgent extends Agent<Env, UXOrchestratorState> {
    * Update the current phase and broadcast to clients.
    */
   private setPhase(phase: AgentPhase, progress: number) {
-    const currentState = this.state || this.initializeState("", "");
+    const currentState = this.state!;
     this.setState({
       ...currentState,
       phase,
