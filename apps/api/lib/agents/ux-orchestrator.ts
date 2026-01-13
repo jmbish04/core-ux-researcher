@@ -113,7 +113,7 @@ export class UXOrchestratorAgent extends Agent<Env, UXOrchestratorState> {
       data,
     };
 
-    const currentState = this.state || this.initializeState("", "");
+    const currentState = this.state!;
     this.setState({
       ...currentState,
       logs: [...(currentState.logs || []), entry],
