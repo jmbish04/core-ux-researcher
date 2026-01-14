@@ -10,6 +10,26 @@
   "workers_dev": false,
   "upload_source_maps": true,
 
+  // [DURABLE OBJECTS]
+  // Agent classes for stateful, persistent workflows.
+  "durable_objects": {
+    "bindings": [
+      { "name": "UX_ORCHESTRATOR", "class_name": "UXOrchestratorAgent" },
+      { "name": "REPO_ANALYST", "class_name": "RepoAnalystAgent" },
+      { "name": "STYLE_SCOUT", "class_name": "StyleScoutAgent" },
+      { "name": "ARCHITECT", "class_name": "ArchitectAgent" }
+    ]
+  },
+
+  // [MIGRATIONS]
+  // Durable Object migrations for schema changes.
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_classes": ["UXOrchestratorAgent", "RepoAnalystAgent", "StyleScoutAgent", "ArchitectAgent"]
+    }
+  ],
+
   // [ENVIRONMENTS]
   // Environment-specific configurations for different deployment stages.
   // Top-level config = production, nested env objects = other environments.

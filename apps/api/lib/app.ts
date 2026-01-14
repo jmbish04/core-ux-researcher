@@ -10,17 +10,54 @@ import type { AppContext } from "./context.js";
 import { router } from "./trpc.js";
 import { organizationRouter } from "../routers/organization.js";
 import { userRouter } from "../routers/user.js";
+import { uxResearchRouter } from "../routers/ux-research.js";
 
 // tRPC API router
 const appRouter = router({
   user: userRouter,
   organization: organizationRouter,
+  uxResearch: uxResearchRouter,
 });
 
 // HTTP router
 const app = new Hono<AppContext>();
 
 app.get("/", (c) => c.redirect("/api"));
+
+// UX Research WebSocket/Durable Object proxy
+// Routes requests to the UX Orchestrator Durable Object for the given requestId
+app.all("/api/ux-research/:requestId/*", async (c) => {
+  const { requestId } = c.req.param();
+  const env = c.env as {
+    UX_ORCHESTRATOR: {
+      idFromName: (name: string) => { toString: () => string };
+      get: (id: { toString: () => string }) => {
+        fetch: (req: Request) => Promise<Response>;
+      };
+    };
+  };
+
+  if (!env.UX_ORCHESTRATOR) {
+    return c.json({ error: "UX Orchestrator not configured" }, 503);
+  }
+
+  const orchestratorId = env.UX_ORCHESTRATOR.idFromName(requestId);
+  const orchestratorStub = env.UX_ORCHESTRATOR.get(orchestratorId);
+
+  // Forward the request to the Durable Object, adjusting the path
+  const url = new URL(c.req.url);
+  const pathSuffix = url.pathname.replace(`/api/ux-research/${requestId}`, "");
+  const newUrl = new URL(pathSuffix || "/", url.origin);
+  newUrl.search = url.search;
+
+  const newRequest = new Request(newUrl.toString(), {
+    method: c.req.method,
+    headers: c.req.raw.headers,
+    body: c.req.raw.body,
+  });
+
+  return orchestratorStub.fetch(newRequest);
+});
 
 // Root endpoint with API information
 app.get("/api", (c) => {
