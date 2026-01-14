@@ -66,6 +66,10 @@ import * as tools from "../tools";
 
 /**
  * Generates wildcard patterns for contractor name matching to support fuzzy SoQL queries.
+ *
+ * @param _env - Environment bindings (kept for signature compatibility)
+ * @param input - Contractor name or license input
+ * @returns Wildcard patterns suitable for SoQL LIKE clauses
  */
 const generateContractorWildcards = async (
   _env: Env,
@@ -95,6 +99,10 @@ const generateContractorWildcards = async (
 
 /**
  * Classifies the user's natural language query into an agent routing mode.
+ *
+ * @param _env - Environment bindings (kept for signature compatibility)
+ * @param query - Natural language request text
+ * @returns Mode string such as \"nl_analyst\", \"bulk_analysis\", \"ux_research\", or \"data_pull\"
  */
 const classifyIntent = async (_env: Env, query: string): Promise<string> => {
   const lowercased = query.toLowerCase();
