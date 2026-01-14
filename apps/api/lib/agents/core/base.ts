@@ -102,7 +102,7 @@ const generateContractorWildcards = async (
  *
  * @param _env - Environment bindings (kept for signature compatibility)
  * @param query - Natural language request text
- * @returns Mode string such as \"nl_analyst\", \"bulk_analysis\", \"ux_research\", or \"data_pull\"
+ * @returns Mode string such as "nl_analyst", "bulk_analysis", "ux_research", or "data_pull"
  */
 const classifyIntent = async (_env: Env, query: string): Promise<string> => {
   const lowercased = query.toLowerCase();
