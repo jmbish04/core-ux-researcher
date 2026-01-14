@@ -1,6 +1,5 @@
 ---
-import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { cn } from '@/lib/utils';
 
 interface Event {
   id: string;
@@ -16,11 +15,6 @@ interface Props {
 }
 
 const { events } = Astro.props;
-
-// Utility for Shadcn-like class merging
-function cn(...inputs: (string | undefined | null | false)[]) {
-  return twMerge(clsx(inputs));
-}
 
 const agentColors = {
   Orchestrator: 'text-indigo-400 border-indigo-500/20 bg-indigo-500/10',

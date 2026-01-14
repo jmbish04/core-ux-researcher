@@ -5,7 +5,7 @@
   // Application identity and Cloudflare runtime compatibility settings.
   "name": "core-ux-researcher-web",
   "main": "./dist/_worker.js",
-  "compatibility_date": "2024-09-23",
+  "compatibility_date": "2024-12-01",
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": false,
   "observability": {
