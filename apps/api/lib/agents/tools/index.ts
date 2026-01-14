@@ -1,8 +1,7 @@
 import * as sandbox from "./sandbox";
 import * as socrata from "./socrata";
-import * as dbi from "./dbi";
 
-export { sandbox, socrata, dbi };
+export { sandbox, socrata };
 
 export type { SodaDatasetKey } from "./socrata";
 
@@ -23,4 +22,3 @@ export function getAllTools(env: Env) {
     new socrata.SocrataQueryTool(env),
   ];
 }
-

@@ -60,9 +60,67 @@ export type {
 };
 
 // Import shared utilities to expose on BaseAgent
-    import { getSandbox } from "@cloudflare/sandbox";
-    import type { SodaDatasetKey } from "../tools";
-    import * as tools from "../tools";
+import { getSandbox } from "@cloudflare/sandbox";
+import type { SodaDatasetKey } from "../tools";
+import * as tools from "../tools";
+
+/**
+ * Generates wildcard patterns for contractor name matching to support fuzzy SoQL queries.
+ *
+ * @param _env - Environment bindings (kept for signature compatibility)
+ * @param input - Contractor name or license input
+ * @returns Wildcard patterns suitable for SoQL LIKE clauses
+ */
+const generateContractorWildcards = async (
+  _env: Env,
+  input: string,
+): Promise<string[]> => {
+  const patterns: string[] = [];
+  const cleaned = input.trim().toUpperCase();
+
+  if (!cleaned) return patterns;
+
+  patterns.push(`%${cleaned}%`);
+
+  const licenseMatch = cleaned.match(/\b(\d{5,10})\b/);
+  if (licenseMatch) {
+    patterns.push(`%${licenseMatch[1]}%`);
+  }
+
+  const words = cleaned.split(/\s+/).filter((w) => w.length > 2);
+  for (const word of words) {
+    if (!/^\d+$/.test(word)) {
+      patterns.push(`%${word}%`);
+    }
+  }
+
+  return [...new Set(patterns)];
+};
+
+/**
+ * Classifies the user's natural language query into an agent routing mode.
+ *
+ * @param _env - Environment bindings (kept for signature compatibility)
+ * @param query - Natural language request text
+ * @returns Mode string such as "nl_analyst", "bulk_analysis", "ux_research", or "data_pull"
+ */
+const classifyIntent = async (_env: Env, query: string): Promise<string> => {
+  const lowercased = query.toLowerCase();
+
+  if (/analy|insight|trend|pattern|anomal/i.test(lowercased)) {
+    return "nl_analyst";
+  }
+
+  if (/bulk|all|export|download|mass/i.test(lowercased)) {
+    return "bulk_analysis";
+  }
+
+  if (/ux|wireframe|component|frontend|ui|design|user story/i.test(lowercased)) {
+    return "ux_research";
+  }
+
+  return "data_pull";
+};
 
 export abstract class BaseAgent<
   E extends Env = Env,
@@ -77,7 +135,7 @@ export abstract class BaseAgent<
   protected escapeSoql = tools.socrata.escapeSoql;
   protected soqlLikeAny = tools.socrata.soqlLikeAny;
   protected withinCircle = tools.socrata.withinCircle;
-  protected generateContractorWildcards = tools.dbi.generateContractorWildcards;
+  protected generateContractorWildcards = generateContractorWildcards;
   protected safeSocrataJson = tools.socrata.safeSocrataJson;
   protected cleanAiJsonOutput = cleanAiJsonOutput;
   protected sanitizeAndFormatAiResponse = sanitizeAndFormatAiResponse;
@@ -106,7 +164,7 @@ When asked to analyze data or perform logic better suited for Python, PREFER usi
   }
 
   protected async classifyIntent(env: Env, query: string) {
-    return tools.dbi.classifyIntent(env, query);
+    return classifyIntent(env, query);
   }
 
   // -- LOGGING (Prisma) --
