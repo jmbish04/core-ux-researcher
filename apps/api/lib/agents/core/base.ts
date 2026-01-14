@@ -64,11 +64,13 @@ import { getSandbox } from "@cloudflare/sandbox";
 import type { SodaDatasetKey } from "../tools";
 import * as tools from "../tools";
 
+/**
+ * Generates wildcard patterns for contractor name matching to support fuzzy SoQL queries.
+ */
 const generateContractorWildcards = async (
-  env: Env,
+  _env: Env,
   input: string,
 ): Promise<string[]> => {
-  void env;
   const patterns: string[] = [];
   const cleaned = input.trim().toUpperCase();
 
@@ -91,8 +93,10 @@ const generateContractorWildcards = async (
   return [...new Set(patterns)];
 };
 
-const classifyIntent = async (env: Env, query: string): Promise<string> => {
-  void env;
+/**
+ * Classifies the user's natural language query into an agent routing mode.
+ */
+const classifyIntent = async (_env: Env, query: string): Promise<string> => {
   const lowercased = query.toLowerCase();
 
   if (/analy|insight|trend|pattern|anomal/i.test(lowercased)) {
