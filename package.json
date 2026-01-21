@@ -61,7 +61,8 @@
     "infra:prod": "pnpm run infra:prod:edge:apply",
     "infra:prod:edge:plan": "terraform -chdir=infra/envs/prod/edge plan",
     "infra:prod:edge:apply": "terraform -chdir=infra/envs/prod/edge apply",
-    "infra:prod:edge:destroy": "terraform -chdir=infra/envs/prod/edge destroy"
+    "infra:prod:edge:destroy": "terraform -chdir=infra/envs/prod/edge destroy",
+    "deploy:all": "pnpm build && pnpm --filter @repo/api --filter @repo/app deploy"
   },
   "devDependencies": {
     "@emotion/babel-plugin": "^11.13.5",
