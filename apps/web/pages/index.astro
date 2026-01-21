@@ -1,162 +1,133 @@
 ---
-import BaseLayout from '@/layouts/BaseLayout.astro';
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/ui';
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import AgentActivityLog from '@/components/AgentActivityLog.astro';
+import { Database, FileCode, Search } from 'lucide-react';
 
-const features = [
-  {
-    title: "⚡ Lightning Fast",
-    description: "SSR at CDN edge locations with ~100 Lighthouse scores",
-    content: "Optimized for Cloudflare Workers with Bun runtime for maximum performance."
+// --- SERVER-SIDE DATA FETCHING (Frontmatter) ---
+// In a real app, this would be: await db.select().from(events)...
+const mockEvents = [
+  { 
+    id: '1', 
+    agent: 'Orchestrator' as const, 
+    action: 'Initializing Research Swarm', 
+    timestamp: '10:42:01', 
+    status: 'info' as const
   },
-  {
-    title: "🎨 Modern UI",
-    description: "Beautiful components with ShadCN UI and Tailwind CSS",
-    content: "Pre-built components following modern design principles and accessibility standards."
+  { 
+    id: '2', 
+    agent: 'RepoAnalyst' as const, 
+    action: 'Parsing prisma.schema', 
+    target: 'apps/api/db/schema.prisma', 
+    timestamp: '10:42:05', 
+    status: 'success' as const
   },
-  {
-    title: "🚀 Developer Experience",
-    description: "TypeScript, hot reload, and excellent tooling",
-    content: "Full TypeScript support with Vite, TanStack Router, and modern development tools."
+  { 
+    id: '3', 
+    agent: 'StyleScout' as const, 
+    action: 'Browsing Shadcn Registry', 
+    target: 'https://ui.shadcn.com/docs/components/data-table', 
+    timestamp: '10:42:12', 
+    status: 'info' as const
   },
-  {
-    title: "📱 Full-Stack",
-    description: "tRPC API with PostgreSQL and authentication",
-    content: "Complete backend solution with type-safe APIs and database integration."
+  { 
+    id: '4', 
+    agent: 'Architect' as const, 
+    action: 'Drafting Wireframe', 
+    target: 'Dashboard View v1.0', 
+    timestamp: '10:42:45', 
+    status: 'warning' as const
   },
-  {
-    title: "🔧 Configurable",
-    description: "Monorepo structure with workspace management",
-    content: "Organized codebase with separate app, API, edge, and database workspaces."
-  },
-  {
-    title: "☁️ Serverless Ready",
-    description: "Deploy to edge locations worldwide",
-    content: "Built for Cloudflare Workers with global distribution and automatic scaling."
-  }
 ];
 
-const technologies = [
-  "React 19", "TypeScript", "Astro", "TanStack Router", 
-  "ShadCN UI", "Tailwind CSS", "Bun", "Hono", 
-  "tRPC", "PostgreSQL", "Cloudflare", "Jotai"
+const recentProjects = [
+  { name: 'Core UX Researcher', status: 'Active', updated: '2m ago' },
+  { name: 'SaaS Starter Kit', status: 'Idle', updated: '4h ago' },
+  { name: 'Internal Tools', status: 'Archived', updated: '2d ago' },
 ];
 ---
 
-<BaseLayout>
-  <!-- Hero Section -->
-  <section class="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-background to-muted/20">
-    <div class="container mx-auto text-center">
-      <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
-        React Starter Kit
-      </h1>
-      <p class="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-        Modern full-stack web application template optimized for serverless
-        deployment to CDN edge locations. Built with React, TypeScript, and
-        the latest web technologies.
-      </p>
-      <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <Button size="lg" asChild client:visible>
-          <a
-            href="https://github.com/kriasoft/react-starter-kit"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Get Started
-          </a>
-        </Button>
-        <Button variant="outline" size="lg" asChild client:visible>
-          <a
-            href="https://github.com/kriasoft/react-starter-kit"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            View on GitHub
-          </a>
-        </Button>
+<DashboardLayout 
+  title="Mission Control" 
+  breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Projects', href: '/' }]}
+>
+
+  <div slot="agent-stream">
+    <AgentActivityLog events={mockEvents} />
+  </div>
+
+  <div class="space-y-8 max-w-5xl mx-auto">
+    
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold tracking-tight text-white">Active Deployments</h1>
+        <p class="text-zinc-400 mt-2">Manage your autonomous research agents.</p>
       </div>
+      <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-lg shadow-indigo-500/20">
+        + New Swarm
+      </button>
     </div>
-  </section>
 
-  <!-- Features Section -->
-  <section class="py-20 px-4 sm:px-6 lg:px-8">
-    <div class="container mx-auto">
-      <div class="text-center mb-16">
-        <h2 class="text-3xl font-bold tracking-tight mb-4">
-          Everything you need to build modern web apps
-        </h2>
-        <p class="text-muted-foreground text-lg max-w-2xl mx-auto">
-          React Starter Kit provides a solid foundation with best practices,
-          modern tooling, and optimized performance out of the box.
-        </p>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {features.map((feature) => (
-          <Card client:visible>
-            <CardHeader>
-              <CardTitle>{feature.title}</CardTitle>
-              <CardDescription>{feature.description}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p class="text-sm text-muted-foreground">{feature.content}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </div>
-  </section>
-
-  <!-- Tech Stack Section -->
-  <section class="py-20 px-4 sm:px-6 lg:px-8 bg-muted/20">
-    <div class="container mx-auto text-center">
-      <h2 class="text-3xl font-bold tracking-tight mb-4">
-        Built with Modern Technologies
-      </h2>
-      <p class="text-muted-foreground text-lg mb-12 max-w-2xl mx-auto">
-        Carefully selected technologies that work together seamlessly
-      </p>
-
-      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8">
-        {technologies.map((tech) => (
-          <div class="p-4 rounded-lg bg-background border">
-            <span class="font-medium">{tech}</span>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="p-6 rounded-xl border border-zinc-800 bg-zinc-950/50 hover:border-zinc-700 transition-colors">
+        <div class="flex items-center gap-4">
+          <div class="p-3 rounded-lg bg-emerald-500/10 text-emerald-500">
+            <Database className="w-6 h-6" />
           </div>
+          <div>
+            <p class="text-sm font-medium text-zinc-500">Schemas Parsed</p>
+            <p class="text-2xl font-bold text-white">24</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="p-6 rounded-xl border border-zinc-800 bg-zinc-950/50 hover:border-zinc-700 transition-colors">
+        <div class="flex items-center gap-4">
+          <div class="p-3 rounded-lg bg-cyan-500/10 text-cyan-500">
+            <Search className="w-6 h-6" />
+          </div>
+          <div>
+            <p class="text-sm font-medium text-zinc-500">Components Found</p>
+            <p class="text-2xl font-bold text-white">142</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-6 rounded-xl border border-zinc-800 bg-zinc-950/50 hover:border-zinc-700 transition-colors">
+        <div class="flex items-center gap-4">
+          <div class="p-3 rounded-lg bg-amber-500/10 text-amber-500">
+            <FileCode className="w-6 h-6" />
+          </div>
+          <div>
+            <p class="text-sm font-medium text-zinc-500">Code Generated</p>
+            <p class="text-2xl font-bold text-white">12k LoC</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-xl border border-zinc-800 bg-zinc-950/30 overflow-hidden">
+      <div class="px-6 py-4 border-b border-zinc-800">
+        <h3 class="font-semibold text-zinc-100">Recent Projects</h3>
+      </div>
+      <div class="divide-y divide-zinc-800/50">
+        {recentProjects.map((project) => (
+          <a href={`/project/${project.name.toLowerCase().replace(/\s+/g, '-')}`} class="flex items-center justify-between px-6 py-4 hover:bg-zinc-900/50 transition-colors group">
+            <div class="flex items-center gap-4">
+              <div class="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]"></div>
+              <span class="font-medium text-zinc-200 group-hover:text-white transition-colors">
+                {project.name}
+              </span>
+            </div>
+            <div class="flex items-center gap-6">
+              <span class="text-xs font-mono text-zinc-500">{project.updated}</span>
+              <span class="text-xs px-2 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400">
+                {project.status}
+              </span>
+            </div>
+          </a>
         ))}
       </div>
     </div>
-  </section>
 
-  <!-- CTA Section -->
-  <section class="py-20 px-4 sm:px-6 lg:px-8">
-    <div class="container mx-auto text-center">
-      <h2 class="text-3xl font-bold tracking-tight mb-4">
-        Ready to start building?
-      </h2>
-      <p class="text-muted-foreground text-lg mb-8 max-w-2xl mx-auto">
-        Get started with React Starter Kit today and build your next project
-        with confidence.
-      </p>
-
-      <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <Button size="lg" asChild client:visible>
-          <a
-            href="https://github.com/kriasoft/react-starter-kit"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Clone Repository
-          </a>
-        </Button>
-        <Button variant="outline" size="lg" asChild client:visible>
-          <a
-            href="https://github.com/kriasoft/react-starter-kit#readme"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read Documentation
-          </a>
-        </Button>
-      </div>
-    </div>
-  </section>
-</BaseLayout>
+  </div>
+</DashboardLayout>

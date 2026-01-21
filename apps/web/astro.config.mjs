@@ -1,3 +1,4 @@
+import cloudflare from "@astrojs/cloudflare";
 import react from "@astrojs/react";
 import { defineConfig } from "astro/config";
 import { loadEnv } from "vite";
@@ -9,7 +10,12 @@ export default defineConfig({
   srcDir: ".",
   publicDir: "./public",
   outDir: "./dist",
-  output: "static",
+  // Enforce SSR. Static Site Generation (SSG) is disabled.
+  output: "server",
+  adapter: cloudflare({
+    // Enable Image Service for optimized asset delivery
+    imageService: "cloudflare",
+  }),
   integrations: [react()],
   vite: {
     css: {
