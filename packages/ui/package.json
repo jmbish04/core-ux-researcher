@@ -46,7 +46,7 @@
     "@radix-ui/react-switch": "^1.2.6",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "lucide-react": "^0.562.0",
+    "lucide-react": "^1.7.0",
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
@@ -56,7 +56,7 @@
     "glob": "^13.0.0",
     "tailwindcss": "^4.1.17",
     "tsx": "^4.19.4",
-    "typescript": "~5.9.3"
+    "typescript": "~6.0.2"
   },
   "license": "MIT"
 }
